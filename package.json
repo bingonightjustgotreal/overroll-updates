@@ -1,0 +1,60 @@
+{
+    "name": "Overroll",
+    "version": "1.0.0",
+    "description": "A simple game made with electron where you are a ball.",
+    "author": "Nitro_",
+    "note": "This is my GitHub name, username down below.",
+    "license": "UNLICENSED",
+    "main": "main.js",
+    "scripts": {
+        "start": "node launch.js",
+        "reset-player": "node launch.js --reset-player",
+        "build": "electron-builder",
+        "build:win": "electron-builder --win",
+        "build:mac": "electron-builder --mac",
+        "build:linux": "electron-builder --linux"
+    },
+    "devDependencies": {
+        "electron": "^28.2.0",
+        "electron-builder": "^24.9.1",
+        "electron-packager": "^17.1.2"
+    },
+    "dependencies": {
+        "electron-updater": "^6.8.11"
+    },
+    "build": {
+        "appId": "com.nitro.overroll",
+        "productName": "Overroll",
+        "publish": [
+            {
+                "provider": "github",
+                "owner": "bingonightjustgotreal",
+                "repo": "overroll-updates"
+            }
+        ],
+        "directories": {
+            "output": "dist"
+        },
+        "files": [
+            "main.js",
+            "preload.js",
+            "index.html",
+            "style.css",
+            "script.js",
+            "build/**/*"
+        ],
+        "win": {
+            "target": "portable",
+            "icon": "build/icon.ico"
+        },
+        "mac": {
+            "target": "dmg",
+            "icon": "build/icon.icns"
+        },
+        "linux": {
+            "target": "AppImage",
+            "icon": "build/icon.png",
+            "category": "Game"
+        }
+    }
+}
