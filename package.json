@@ -11,6 +11,7 @@
         "reset-player": "node launch.js --reset-player",
         "build": "electron-builder",
         "build:win": "electron-builder --win",
+        "release:win": "electron-builder --win --publish always",
         "build:mac": "electron-builder --mac",
         "build:linux": "electron-builder --linux"
     },
@@ -44,7 +45,7 @@
             "build/**/*"
         ],
         "win": {
-            "target": "portable",
+            "target": "nsis",
             "icon": "build/icon.ico"
         },
         "mac": {
@@ -58,3 +59,4 @@
         }
     }
 }
+

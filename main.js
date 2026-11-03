@@ -1,4 +1,5 @@
 const { app, BrowserWindow, Menu, shell, ipcMain, safeStorage, session, dialog } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
@@ -21,6 +22,114 @@ process.on('unhandledRejection', error => reportStartupError(error));
 
 let mainWindow = null;
 const SAVE_FILENAME = 'overroll-save-v1.json';
+
+// Releases are distributed through GitHub Releases. Never download until the
+// player has accepted the update prompt.
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = false;
+
+function showUpdateProgress(version) {
+    const progressWindow = new BrowserWindow({
+        width: 420,
+        height: 190,
+        resizable: false,
+        minimizable: false,
+        maximizable: false,
+        alwaysOnTop: true,
+        backgroundColor: '#101426',
+        title: 'Updating Overroll',
+        autoHideMenuBar: true,
+        webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true }
+    });
+    progressWindow.setMenuBarVisibility(false);
+    const safeVersion = String(version).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+    const page = `<!doctype html><meta charset="utf-8"><style>
+        *{box-sizing:border-box}body{margin:0;padding:30px;background:#101426;color:#f7f8ff;font:15px Segoe UI,Arial,sans-serif}
+        h2{font-size:20px;margin:0 0 10px}p{color:#bdc5df;margin:0 0 18px}
+        .track{height:12px;background:#29314a;border-radius:99px;overflow:hidden}.fill{height:100%;width:0;background:#ffd52a;border-radius:99px;transition:width .15s}
+        #label{font-size:12px;color:#bdc5df;margin-top:9px}
+    </style><h2>Updating Overroll</h2><p>Downloading version ${safeVersion}. Keep the game open.</p>
+    <div class="track"><div class="fill" id="fill"></div></div><div id="label">Preparing download…</div>`;
+    progressWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(page)}`);
+    progressWindow.on('closed', () => app.setProgressBar(-1));
+    return progressWindow;
+}
+
+async function checkForUpdatesBeforeLaunch() {
+    // Development builds do not have electron-builder's update feed metadata.
+    if (!app.isPackaged) return true;
+
+    let availableInfo = null;
+    let checkError = null;
+    const available = info => { availableInfo = info; };
+    const failed = error => { checkError = error; };
+    autoUpdater.once('update-available', available);
+    autoUpdater.once('error', failed);
+    try {
+        await autoUpdater.checkForUpdates();
+    } catch (error) {
+        checkError = error;
+    } finally {
+        autoUpdater.removeListener('update-available', available);
+        autoUpdater.removeListener('error', failed);
+    }
+
+    if (checkError || !availableInfo) {
+        // If GitHub is unreachable or no release has been published, let the
+        // player continue using the installed copy.
+        if (checkError) reportStartupError(`Update check failed: ${checkError.message || checkError}`);
+        return true;
+    }
+
+    const currentVersion = app.getVersion();
+    const nextVersion = availableInfo.version || 'a newer version';
+    const choice = await dialog.showMessageBox({
+        type: 'info',
+        title: 'Overroll update required',
+        message: `A newer version of Overroll is available (${nextVersion}).`,
+        detail: `You have version ${currentVersion}. Choose Agree to download and install the update. Choosing Decline will close the game.`,
+        buttons: ['Agree', 'Decline'],
+        defaultId: 0,
+        cancelId: 1,
+        noLink: true
+    });
+    if (choice.response !== 0) return false;
+
+    let progressWindow = showUpdateProgress(nextVersion);
+    const onProgress = progress => {
+        const percent = Math.max(0, Math.min(100, Math.round(progress.percent || 0)));
+        app.setProgressBar(percent / 100);
+        if (!progressWindow.isDestroyed()) {
+            progressWindow.webContents.executeJavaScript(`document.getElementById('fill').style.width='${percent}%';document.getElementById('label').textContent='${percent}% downloaded';`).catch(() => {});
+        }
+    };
+    autoUpdater.on('download-progress', onProgress);
+    try {
+        await autoUpdater.downloadUpdate();
+        autoUpdater.removeListener('download-progress', onProgress);
+        app.setProgressBar(-1);
+        if (!progressWindow.isDestroyed()) progressWindow.close();
+        progressWindow = null;
+        autoUpdater.quitAndInstall(false, true);
+        return false;
+    } catch (error) {
+        autoUpdater.removeListener('download-progress', onProgress);
+        app.setProgressBar(-1);
+        if (progressWindow && !progressWindow.isDestroyed()) progressWindow.close();
+        const retry = await dialog.showMessageBox({
+            type: 'error',
+            title: 'Update could not be downloaded',
+            message: 'Overroll could not download the update.',
+            detail: `${error.message || error}\n\nCheck your internet connection and try again.`,
+            buttons: ['Try Again', 'Quit'],
+            defaultId: 0,
+            cancelId: 1,
+            noLink: true
+        });
+        if (retry.response === 0) return checkForUpdatesBeforeLaunch();
+        return false;
+    }
+}
 
 function getOAuthConfig() {
     try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'build', 'google-oauth.json'), 'utf8')); }
@@ -251,6 +360,12 @@ function buildMenu() {
 }
 
 app.whenReady().then(async () => {
+    const mayLaunch = await checkForUpdatesBeforeLaunch();
+    if (!mayLaunch) {
+        app.quit();
+        return;
+    }
+
     const resetPlayer = process.argv.includes('--reset-player');
     if (resetPlayer) {
         await session.defaultSession.clearStorageData({ storages: ['localstorage'] });
@@ -267,3 +382,4 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 });
+
