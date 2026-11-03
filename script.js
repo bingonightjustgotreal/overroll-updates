@@ -404,6 +404,7 @@
      if (this.ownedTrails.indexOf(this.currentTrail) === -1) this.currentTrail = 'none';
      this.ownedSkinSets = this._load('rrOwnedSkinSets', []);
      this.skinTrials = this._loadObj('rrSkinTrials', {});
+     this.redeemedPromoCodes = this._load('rrRedeemedPromoCodes', []);
      this.timedWinsToday = parseInt(localStorage.getItem('rrTimedWinsToday')) || 0;
      this.timedWinsDate = localStorage.getItem('rrTimedWinsDate') || '';
      if (this.timedWinsDate !== todayKey()) {
@@ -484,6 +485,7 @@
      localStorage.setItem('rrCurrentTrail', this.currentTrail);
      localStorage.setItem('rrOwnedSkinSets', JSON.stringify(this.ownedSkinSets));
      localStorage.setItem('rrSkinTrials', JSON.stringify(this.skinTrials));
+     localStorage.setItem('rrRedeemedPromoCodes', JSON.stringify(this.redeemedPromoCodes));
      localStorage.setItem('rrTimedWinsToday', String(this.timedWinsToday));
      localStorage.setItem('rrTimedWinsDate', this.timedWinsDate);
      localStorage.setItem('rrScoreBoosterCompleted', JSON.stringify(this.scoreBoosterCompleted));
@@ -1974,6 +1976,8 @@ SoundFX.prototype.startMusic = function() { this._startMusicMode('normal'); };
      var CONV_BTN_X, CONV_BTN_Y, CONV_BTN_W, CONV_BTN_H;
      var ACH_GRID_X, ACH_GRID_Y, ACH_CARD_W, ACH_CARD_H, ACH_GAP;
      var PROMO_CARD_W, PROMO_CARD_H, PROMO_GAP, PROMO_TOP, PROMO_X;
+     var PROMO_CODE_TITLE_Y, PROMO_CODE_X, PROMO_CODE_Y, PROMO_CODE_W, PROMO_CODE_H;
+     var PROMO_CODE_BUTTON_X, PROMO_CODE_BUTTON_W, PROMO_CODE_STATUS_Y;
      var PROMO_MODAL_X, PROMO_MODAL_Y, PROMO_MODAL_W, PROMO_MODAL_H;
      var PROMO_MODAL_BUY_X, PROMO_MODAL_BUY_Y, PROMO_MODAL_BUY_W, PROMO_MODAL_BUY_H;
      var PROMO_MODAL_PREV_X, PROMO_MODAL_PREV_Y, PROMO_MODAL_PREV_W, PROMO_MODAL_PREV_H;
@@ -2037,7 +2041,15 @@ SoundFX.prototype.startMusic = function() { this._startMusicMode('normal'); };
          ACH_GRID_X = SHOP_BOX_X + 30; ACH_GRID_Y = SHOP_BOX_Y + 130; ACH_GAP = 10;
          ACH_CARD_W = (cWidth - ACH_GAP) / 2 - 4; ACH_CARD_H = 58;
          PROMO_X = cLeft; PROMO_TOP = SHOP_BOX_Y + 110; PROMO_GAP = 20;
-         PROMO_CARD_W = (cWidth - PROMO_GAP * 2) / 3; PROMO_CARD_H = 290;
+         PROMO_CARD_W = (cWidth - PROMO_GAP * 2) / 3; PROMO_CARD_H = 230;
+         var promoGroupW = Math.min(500, cWidth);
+         PROMO_CODE_TITLE_Y = SHOP_BOX_Y + SHOP_BOX_H - 112;
+         PROMO_CODE_X = cLeft + (cWidth - promoGroupW) / 2;
+         PROMO_CODE_Y = SHOP_BOX_Y + SHOP_BOX_H - 84;
+         PROMO_CODE_W = promoGroupW - 132; PROMO_CODE_H = 38;
+         PROMO_CODE_BUTTON_X = PROMO_CODE_X + PROMO_CODE_W + 12;
+         PROMO_CODE_BUTTON_W = promoGroupW - PROMO_CODE_W - 12;
+         PROMO_CODE_STATUS_Y = SHOP_BOX_Y + SHOP_BOX_H - 28;
          PROMO_MODAL_W = 600; PROMO_MODAL_H = 420;
          PROMO_MODAL_X = W/2 - PROMO_MODAL_W/2; PROMO_MODAL_Y = H/2 - PROMO_MODAL_H/2;
          PROMO_MODAL_BUY_X = PROMO_MODAL_X + 40; PROMO_MODAL_BUY_Y = PROMO_MODAL_Y + PROMO_MODAL_H - 130;
@@ -2112,6 +2124,8 @@ SoundFX.prototype.startMusic = function() { this._startMusicMode('normal'); };
          this.levelScrollY = 0;
          this.promoModalSet = null; this.promoPreviewSet = null;
          this.promoPreviewScrollY = 0;
+         this.promoCodeInput = ''; this.promoCodeFocused = false;
+         this.promoCodeStatus = 'One-time reward: 100 diamonds.'; this.promoCodeStatusType = 'info';
          this.achScrollY = 0;
          this.projectiles = []; this.enemyProjectiles = [];
          this.flyers = []; this.floaters = []; this.mega = null; this.megaWorm = null;
@@ -2241,6 +2255,16 @@ SoundFX.prototype.startMusic = function() { this._startMusicMode('normal'); };
          var self = this;
          window.addEventListener('keydown', function(e) {
              var key = e.key;
+             if (self.state === 'shop' && self.shopTab === 'promotions' && self.promoCodeFocused) {
+                 if (key === 'Escape') { self.promoCodeFocused = false; e.preventDefault(); return; }
+                 if (key === 'Enter') { self.redeemPromoCode(); e.preventDefault(); return; }
+                 if (key === 'Backspace') { self.promoCodeInput = self.promoCodeInput.slice(0, -1); e.preventDefault(); return; }
+                 if (key.length === 1 && /^[a-z0-9_]$/i.test(key) && self.promoCodeInput.length < 24) {
+                     self.promoCodeInput += key.toUpperCase(); e.preventDefault(); return;
+                 }
+                 if (key.length === 1 || key === ' ') e.preventDefault();
+                 return;
+             }
              self.keys[key] = true; self.player.keys = self.keys;
              if (key === ' ' || key === 'ArrowUp' || key === 'w' || key === 'W') {
                  e.preventDefault();
@@ -2466,7 +2490,24 @@ SoundFX.prototype.startMusic = function() { this._startMusicMode('normal'); };
          this.shopOpenProgress = 0;
          this.sound.play('click');
      };
-     Game.prototype.closeShop = function() { this.state = this.previousState || 'menu'; this.sound.play('click'); };
+     Game.prototype.closeShop = function() { this.promoCodeFocused = false; this.state = this.previousState || 'menu'; this.sound.play('click'); };
+     Game.prototype.redeemPromoCode = function() {
+         var code = (this.promoCodeInput || '').trim().toUpperCase();
+         if (!code) {
+             this.promoCodeStatus = 'Enter a promo code first.'; this.promoCodeStatusType = 'error'; this.sound.play('deny'); return;
+         }
+         if (code !== 'BALLS2026_') {
+             this.promoCodeStatus = 'That promo code is not valid.'; this.promoCodeStatusType = 'error'; this.sound.play('deny'); return;
+         }
+         if (this.bank.redeemedPromoCodes.indexOf('BALLS2026_') !== -1) {
+             this.promoCodeStatus = 'BALLS2026_ has already been redeemed on this save.'; this.promoCodeStatusType = 'error'; this.sound.play('deny'); return;
+         }
+         this.bank.redeemedPromoCodes.push('BALLS2026_');
+         this.bank.diamonds += 100;
+         this.bank.save();
+         this.promoCodeStatus = 'Code accepted! You received 100 diamonds.'; this.promoCodeStatusType = 'success';
+         this.promoCodeInput = ''; this.sound.play('buy');
+     };
      Game.prototype.shopNavigate = function(direction) {
          var n;
          if (this.shopTab === 'avatar') {
@@ -2508,7 +2549,7 @@ SoundFX.prototype.startMusic = function() { this._startMusicMode('normal'); };
              for (var i = 0; i < tabs.length; i++) {
                  var ty = SHOP_SB_Y + this.shopSidebarScrollY + i * (SHOP_TAB_H + SHOP_TAB_GAP);
                  if (p.y >= ty && p.y <= ty + SHOP_TAB_H) {
-                     if (this.shopTab !== tabs[i]) { this.shopTab = tabs[i]; this.sound.play('click'); this.achScrollY = 0; }
+                     if (this.shopTab !== tabs[i]) { this.shopTab = tabs[i]; this.promoCodeFocused = false; this.sound.play('click'); this.achScrollY = 0; }
                      return;
                  }
              }
@@ -2569,6 +2610,13 @@ SoundFX.prototype.startMusic = function() { this._startMusicMode('normal'); };
          }
      };
      Game.prototype.handleShopPromotionsClick = function(p) {
+         if (hitTest(p.x, p.y, PROMO_CODE_X, PROMO_CODE_Y, PROMO_CODE_W, PROMO_CODE_H)) {
+             this.promoCodeFocused = true; this.sound.play('click'); return;
+         }
+         if (hitTest(p.x, p.y, PROMO_CODE_BUTTON_X, PROMO_CODE_Y, PROMO_CODE_BUTTON_W, PROMO_CODE_H)) {
+             this.promoCodeFocused = false; this.redeemPromoCode(); return;
+         }
+         this.promoCodeFocused = false;
          var sets = ['solar', 'pool', 'sports'];
          for (var i = 0; i < sets.length; i++) {
              var sx = PROMO_X + i * (PROMO_CARD_W + PROMO_GAP);
@@ -4661,31 +4709,49 @@ SoundFX.prototype.startMusic = function() { this._startMusicMode('normal'); };
              for (var p = 0; p < previewCount; p++) {
                  var iconR = 18;
                  var icx = sx + PROMO_CARD_W / 2 + (p - 1) * (iconR * 2 + 8);
-                 var icy = sy + 55;
+                 var icy = sy + 42;
                  var mockP = new Player(); mockP.avatarName = def.keys[p]; mockP.colorName = 'Yellow'; mockP.rotation = 0;
                  mockP._drawBall(ctx, icx, icy, iconR);
              }
              ctx.fillStyle = '#FFD966'; ctx.font = 'bold 16px ' + FONT;
              ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-             ctx.fillText(def.name, sx + PROMO_CARD_W / 2, sy + 120);
+             ctx.fillText(def.name, sx + PROMO_CARD_W / 2, sy + 88);
              ctx.fillStyle = 'rgba(255,255,255,0.65)'; ctx.font = '11px ' + FONT;
-             ctx.fillText(def.keys.length + ' skins', sx + PROMO_CARD_W / 2, sy + 145);
+             ctx.fillText(def.keys.length + ' skins', sx + PROMO_CARD_W / 2, sy + 111);
              ctx.fillStyle = '#87CEEB'; ctx.font = 'bold 15px ' + FONT;
-             ctx.fillText(def.cost + ' diamonds', sx + PROMO_CARD_W / 2, sy + 180);
-             if (owned) { ctx.fillStyle = '#4CAF50'; ctx.font = 'bold 13px ' + FONT; ctx.fillText('OWNED', sx + PROMO_CARD_W / 2, sy + 215); }
+             ctx.fillText(def.cost + ' diamonds', sx + PROMO_CARD_W / 2, sy + 140);
+             if (owned) { ctx.fillStyle = '#4CAF50'; ctx.font = 'bold 13px ' + FONT; ctx.fillText('OWNED', sx + PROMO_CARD_W / 2, sy + 165); }
              else if (trialing) {
                  var rem = Math.ceil(this.bank.getTrialRemaining(key) / 60000);
                  ctx.fillStyle = '#FFD966'; ctx.font = 'bold 13px ' + FONT;
-                 ctx.fillText('TRIAL ' + rem + 'm', sx + PROMO_CARD_W / 2, sy + 215);
+                 ctx.fillText('TRIAL ' + rem + 'm', sx + PROMO_CARD_W / 2, sy + 165);
              }
-             else { var canAfford = this.bank.diamonds >= def.cost; ctx.fillStyle = canAfford ? '#87CEEB' : '#9E9E9E'; ctx.font = 'bold 12px ' + FONT; ctx.fillText(canAfford ? 'CLICK TO VIEW' : 'NEED ' + (def.cost - this.bank.diamonds) + ' MORE', sx + PROMO_CARD_W / 2, sy + 215); }
+             else { var canAfford = this.bank.diamonds >= def.cost; ctx.fillStyle = canAfford ? '#87CEEB' : '#9E9E9E'; ctx.font = 'bold 12px ' + FONT; ctx.fillText(canAfford ? 'CLICK TO VIEW' : 'NEED ' + (def.cost - this.bank.diamonds) + ' MORE', sx + PROMO_CARD_W / 2, sy + 165); }
              ctx.fillStyle = 'rgba(135,206,250,0.18)';
-             fillRoundRect(ctx, sx + 20, sy + 240, PROMO_CARD_W - 40, 40, 20);
+             fillRoundRect(ctx, sx + 20, sy + 185, PROMO_CARD_W - 40, 32, 16);
              ctx.strokeStyle = 'rgba(135,206,250,0.7)'; ctx.lineWidth = 1.5;
-             strokeRoundRect(ctx, sx + 20, sy + 240, PROMO_CARD_W - 40, 40, 20);
+             strokeRoundRect(ctx, sx + 20, sy + 185, PROMO_CARD_W - 40, 32, 16);
              ctx.fillStyle = '#87CEEB'; ctx.font = 'bold 13px ' + FONT;
-             ctx.fillText(owned ? 'VIEW SET' : 'SELECT', sx + PROMO_CARD_W / 2, sy + 260);
+             ctx.fillText(owned ? 'VIEW SET' : 'SELECT', sx + PROMO_CARD_W / 2, sy + 201);
          }
+         ctx.textAlign = 'left';
+         ctx.fillStyle = '#FFD966'; ctx.font = 'bold 16px ' + FONT;
+         ctx.fillText('PROMO CODE', PROMO_CODE_X, PROMO_CODE_TITLE_Y);
+         ctx.fillStyle = 'rgba(10,14,28,0.88)';
+         fillRoundRect(ctx, PROMO_CODE_X, PROMO_CODE_Y, PROMO_CODE_W, PROMO_CODE_H, 10);
+         ctx.strokeStyle = this.promoCodeFocused ? '#FFD966' : 'rgba(135,206,250,0.55)'; ctx.lineWidth = this.promoCodeFocused ? 2 : 1;
+         strokeRoundRect(ctx, PROMO_CODE_X, PROMO_CODE_Y, PROMO_CODE_W, PROMO_CODE_H, 10);
+         ctx.fillStyle = this.promoCodeInput ? '#FFFFFF' : 'rgba(255,255,255,0.42)'; ctx.font = '14px ' + FONT;
+         ctx.fillText(this.promoCodeInput || (this.promoCodeFocused ? 'Type your code…' : 'Click to enter a code'), PROMO_CODE_X + 12, PROMO_CODE_Y + PROMO_CODE_H / 2);
+         ctx.fillStyle = 'rgba(135,206,250,0.22)';
+         fillRoundRect(ctx, PROMO_CODE_BUTTON_X, PROMO_CODE_Y, PROMO_CODE_BUTTON_W, PROMO_CODE_H, 10);
+         ctx.strokeStyle = 'rgba(135,206,250,0.75)'; ctx.lineWidth = 1.5;
+         strokeRoundRect(ctx, PROMO_CODE_BUTTON_X, PROMO_CODE_Y, PROMO_CODE_BUTTON_W, PROMO_CODE_H, 10);
+         ctx.textAlign = 'center'; ctx.fillStyle = '#87CEEB'; ctx.font = 'bold 13px ' + FONT;
+         ctx.fillText('REDEEM', PROMO_CODE_BUTTON_X + PROMO_CODE_BUTTON_W / 2, PROMO_CODE_Y + PROMO_CODE_H / 2);
+         ctx.fillStyle = this.promoCodeStatusType === 'success' ? '#78E08F' : this.promoCodeStatusType === 'error' ? '#FF8080' : 'rgba(255,255,255,0.6)';
+         ctx.font = '12px ' + FONT;
+         ctx.fillText(this.promoCodeStatus, PROMO_CODE_X + (PROMO_CODE_W + PROMO_CODE_BUTTON_W + 12) / 2, PROMO_CODE_STATUS_Y);
          ctx.restore();
          ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
      };
@@ -4974,3 +5040,4 @@ SoundFX.prototype.startMusic = function() { this._startMusicMode('normal'); };
          }
      })();
  });
+
