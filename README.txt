@@ -1,11 +1,11 @@
-Roundiness source and build files
+Roundy source and build files
 ===============================
 
 To run the source version, first change to this folder and run:
 
     npm start
 
-To rebuild the Roundiness Windows installer from the source, run:
+To rebuild the Roundy Windows installer from the source, run:
 
     npm run build:win
 
