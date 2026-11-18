@@ -1,12 +1,11 @@
-Overroll source and build files
+Roundiness source and build files
 ===============================
 
-The launcher, Overroll.exe, is in the parent folder. To start it from Command
-Prompt, first change to this Code folder and run:
+To run the source version, first change to this folder and run:
 
     npm start
 
-To rebuild the Windows launcher from the source, run:
+To rebuild the Roundiness Windows installer from the source, run:
 
     npm run build:win
 
