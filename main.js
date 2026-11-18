@@ -6,6 +6,10 @@ const https = require('https');
 const crypto = require('crypto');
 const path = require('path');
 
+// Keep existing saves, OAuth credentials, and local settings during the rebrand.
+app.setPath('userData', path.join(app.getPath('appData'), 'Overroll'));
+app.setName('Roundiness');
+
 function reportStartupError(error) {
     try {
         const folder = app.getPath('userData');
@@ -15,7 +19,7 @@ function reportStartupError(error) {
 }
 process.on('uncaughtException', error => {
     reportStartupError(error);
-    try { dialog.showErrorBox('Overroll could not start', error && error.message || String(error)); } catch (_) {}
+    try { dialog.showErrorBox('Roundiness could not start', error && error.message || String(error)); } catch (_) {}
     app.quit();
 });
 process.on('unhandledRejection', error => reportStartupError(error));
@@ -37,7 +41,7 @@ function showUpdateProgress(version) {
         maximizable: false,
         alwaysOnTop: true,
         backgroundColor: '#101426',
-        title: 'Updating Overroll',
+        title: 'Updating Roundiness',
         autoHideMenuBar: true,
         webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true }
     });
@@ -48,7 +52,7 @@ function showUpdateProgress(version) {
         h2{font-size:20px;margin:0 0 10px}p{color:#bdc5df;margin:0 0 18px}
         .track{height:12px;background:#29314a;border-radius:99px;overflow:hidden}.fill{height:100%;width:0;background:#ffd52a;border-radius:99px;transition:width .15s}
         #label{font-size:12px;color:#bdc5df;margin-top:9px}
-    </style><h2>Updating Overroll</h2><p>Downloading version ${safeVersion}. Keep the game open.</p>
+    </style><h2>Updating Roundiness</h2><p>Downloading version ${safeVersion}. Keep the game open.</p>
     <div class="track"><div class="fill" id="fill"></div></div><div id="label">Preparing download…</div>`;
     progressWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(page)}`);
     progressWindow.on('closed', () => app.setProgressBar(-1));
@@ -85,8 +89,8 @@ async function checkForUpdatesBeforeLaunch() {
     const nextVersion = availableInfo.version || 'a newer version';
     const choice = await dialog.showMessageBox({
         type: 'info',
-        title: 'Overroll update required',
-        message: `A newer version of Overroll is available (${nextVersion}).`,
+        title: 'Roundiness update required',
+        message: `A newer version of Roundiness is available (${nextVersion}).`,
         detail: `You have version ${currentVersion}. Choose Agree to download and install the update. Choosing Decline will close the game.`,
         buttons: ['Agree', 'Decline'],
         defaultId: 0,
@@ -119,7 +123,7 @@ async function checkForUpdatesBeforeLaunch() {
         const retry = await dialog.showMessageBox({
             type: 'error',
             title: 'Update could not be downloaded',
-            message: 'Overroll could not download the update.',
+            message: 'Roundiness could not download the update.',
             detail: `${error.message || error}\n\nCheck your internet connection and try again.`,
             buttons: ['Try Again', 'Quit'],
             defaultId: 0,
@@ -201,7 +205,7 @@ function waitForAuthorization(config) {
             const oauthError = callback.searchParams.get('error');
             if (oauthError) { res.writeHead(400, { 'Content-Type': 'text/html' }); res.end('<h2>Sign-in cancelled</h2>You can close this tab.'); return finish(new Error(oauthError === 'access_denied' ? 'Google sign-in was cancelled.' : `Google sign-in failed: ${oauthError}`)); }
             if (callback.searchParams.get('state') !== state || !callback.searchParams.get('code')) { res.writeHead(400); res.end('Sign-in check failed. You can close this tab.'); return finish(new Error('Google sign-in could not be verified. Please try again.')); }
-            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }); res.end('<!doctype html><title>Overroll</title><h2>Sign-in complete</h2><p>Return to Overroll.</p>');
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }); res.end('<!doctype html><title>Roundiness</title><h2>Sign-in complete</h2><p>Return to Roundiness.</p>');
             finish(null, { code: callback.searchParams.get('code'), verifier, redirectUri });
         });
         server.on('error', err => { if (!finished) { finished = true; clearTimeout(timer); reject(err); } });
@@ -303,7 +307,7 @@ function createWindow(resetPlayer = false) {
         minHeight: 420,
         resizable: true,
         backgroundColor: '#0f0f1a',
-        title: 'Overroll',
+        title: 'Roundiness',
         autoHideMenuBar: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
@@ -382,4 +386,3 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 });
-
