@@ -55,7 +55,7 @@ function showUpdateProgress(version) {
     </style><h2>Updating Roundy</h2><p>Downloading version ${safeVersion}. Keep the game open.</p>
     <div class="track"><div class="fill" id="fill"></div></div><div id="label">Preparing download…</div>`;
     progressWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(page)}`);
-    progressWindow.on('closed', () => app.setProgressBar(-1));
+    progressWindow.on('closed', () => { if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setProgressBar(-1); });
     return progressWindow;
 }
 
@@ -102,7 +102,7 @@ async function checkForUpdatesBeforeLaunch() {
     let progressWindow = showUpdateProgress(nextVersion);
     const onProgress = progress => {
         const percent = Math.max(0, Math.min(100, Math.round(progress.percent || 0)));
-        app.setProgressBar(percent / 100);
+        if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setProgressBar(percent / 100);
         if (!progressWindow.isDestroyed()) {
             progressWindow.webContents.executeJavaScript(`document.getElementById('fill').style.width='${percent}%';document.getElementById('label').textContent='${percent}% downloaded';`).catch(() => {});
         }
@@ -111,14 +111,14 @@ async function checkForUpdatesBeforeLaunch() {
     try {
         await autoUpdater.downloadUpdate();
         autoUpdater.removeListener('download-progress', onProgress);
-        app.setProgressBar(-1);
+        if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setProgressBar(-1);
         if (!progressWindow.isDestroyed()) progressWindow.close();
         progressWindow = null;
         autoUpdater.quitAndInstall(false, true);
         return false;
     } catch (error) {
         autoUpdater.removeListener('download-progress', onProgress);
-        app.setProgressBar(-1);
+        if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setProgressBar(-1);
         if (progressWindow && !progressWindow.isDestroyed()) progressWindow.close();
         const retry = await dialog.showMessageBox({
             type: 'error',
@@ -386,3 +386,4 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 });
+
