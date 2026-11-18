@@ -1,14 +1,14 @@
 {
-    "name": "Overroll",
-    "version": "1.0.0",
+    "name": "roundiness",
+    "version": "1.1.0",
     "description": "A simple game made with electron where you are a ball.",
     "author": "Nitro_",
     "note": "This is my GitHub name, username down below.",
     "license": "UNLICENSED",
     "main": "main.js",
     "scripts": {
-        "start": "node launch.js",
-        "reset-player": "node launch.js --reset-player",
+        "start": "electron .",
+        "reset-player": "electron . --reset-player",
         "build": "electron-builder",
         "build:win": "electron-builder --win",
         "release:win": "electron-builder --win --publish always",
@@ -25,7 +25,7 @@
     },
     "build": {
         "appId": "com.nitro.overroll",
-        "productName": "Overroll",
+        "productName": "Roundiness",
         "publish": [
             {
                 "provider": "github",
@@ -57,6 +57,8 @@
             "icon": "build/icon.png",
             "category": "Game"
         }
+    },
+    "allowScripts": {
+        "electron@28.3.3": true
     }
 }
-
