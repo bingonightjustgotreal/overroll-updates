@@ -1,13 +1,13 @@
-# Overroll
+# Roundiness
 
-Source code for the Overroll Electron game.
+Source code for the Roundiness Electron game.
 
 ## Build on Windows
 
 1. Install Node.js with npm.
 2. Run `npm ci` in this folder.
 3. Run `npm run build:win`.
-4. Find the Windows installer under `dist` and install Overroll.
+4. Find the Roundiness Windows installer under `dist` and install the game.
 
 ## Publish a game update
 
@@ -24,5 +24,4 @@ Pushing source changes to the `main` branch alone does not publish a playable up
 
 Google sign-in is optional. Copy `build/google-oauth.example.json` to `build/google-oauth.json` and enter your OAuth client values in the local copy. The real config is ignored by Git and should not be committed. Without OAuth setup, the game still saves progress locally.
 
-Progress saves are stored on the player’s computer. Copies made with the earlier portable Windows launcher must be replaced once with the NSIS installer before they can receive automatic updates.
-
+Progress saves remain in the existing Overroll user-data folder so the rebrand keeps local progress and Google sign-in. Copies made with the earlier portable Windows launcher must be replaced once with the Roundiness NSIS installer before they can receive automatic updates.
