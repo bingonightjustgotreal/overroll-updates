@@ -1,6 +1,18 @@
 name: Publish Roundy Windows updates
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'main.js'
+      - 'preload.js'
+      - 'index.html'
+      - 'style.css'
+      - 'script.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'build/**'
+      - '.github/workflows/publish-windows.yml'
   workflow_dispatch:
 
 permissions:
