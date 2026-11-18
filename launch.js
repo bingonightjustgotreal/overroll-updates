@@ -1,8 +1,11 @@
 const path = require('path');
+const fs = require('fs');
 const { spawn } = require('child_process');
 
 const gameFolder = path.resolve(__dirname, '..');
-const executable = path.join(gameFolder, 'Overroll.exe');
+const renamedExecutable = path.join(gameFolder, 'Roundiness.exe');
+const legacyExecutable = path.join(gameFolder, 'Overroll.exe');
+const executable = fs.existsSync(renamedExecutable) ? renamedExecutable : legacyExecutable;
 const child = spawn(executable, process.argv.slice(2), {
     cwd: gameFolder,
     detached: true,
@@ -14,6 +17,6 @@ child.once('error', error => {
     process.exitCode = 1;
 });
 child.once('spawn', () => {
-    console.log('Started Overroll.exe');
+    console.log(`Started ${path.basename(executable)}`);
     child.unref();
 });
