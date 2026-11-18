@@ -1,6 +1,6 @@
 /* script.js */
 /**
- * Roundiness - Endless Runner Game
+ * Roundy - Endless Runner Game
  * v1.0.0 - Mega Worm smoothed, cave rock texture, boss music, trapped player.
  */
 
@@ -3952,8 +3952,8 @@ SoundFX.prototype.startMusic = function() { this._startMusicMode('normal'); };
          var bob = Math.sin(this.time * 1.2) * 3;
          ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 4;
          ctx.fillStyle = '#FFD966'; ctx.font = 'bold 62px ' + FONT;
-         fitCanvasText(ctx, 'ROUNDINESS', W * 0.8, 62, 30);
-         ctx.fillText('ROUNDINESS', W/2, H * 0.18 + bob); ctx.restore();
+         fitCanvasText(ctx, 'ROUNDY', W * 0.8, 62, 30);
+         ctx.fillText('ROUNDY', W/2, H * 0.18 + bob); ctx.restore();
          ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.font = '20px ' + FONT;
          ctx.fillText('SPACE / UP / CLICK to jump', W/2, H * 0.30);
          var pillY = H * 0.36, pillH = 30, ptsW = 170, cnsW = 150;
@@ -4007,7 +4007,7 @@ SoundFX.prototype.startMusic = function() { this._startMusicMode('normal'); };
          ctx.fillStyle = 'rgba(7, 12, 26, 0.78)'; ctx.fillRect(0, 0, W, H);
          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
          ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 24;
-         ctx.fillStyle = '#FFD966'; ctx.font = 'bold 58px ' + FONT; fitCanvasText(ctx, 'ROUNDINESS', W * 0.82, 58, 30); ctx.fillText('ROUNDINESS', W/2, 78); ctx.restore();
+         ctx.fillStyle = '#FFD966'; ctx.font = 'bold 58px ' + FONT; fitCanvasText(ctx, 'ROUNDY', W * 0.82, 58, 30); ctx.fillText('ROUNDY', W/2, 78); ctx.restore();
          ctx.fillStyle = 'rgba(255,255,255,0.88)'; ctx.font = 'bold 18px ' + FONT; ctx.fillText('Made by Nitro', W/2, 126);
          var panelX = 150, panelY = 158, panelW = 600, panelH = 300;
          ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 24;
@@ -4043,7 +4043,7 @@ SoundFX.prototype.startMusic = function() { this._startMusicMode('normal'); };
          ctx.fillStyle = '#5c7847'; ctx.fillRect(0, 405, W, 7);
          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
          ctx.save(); ctx.globalAlpha = 0.92; ctx.shadowColor = 'rgba(255,217,102,0.4)'; ctx.shadowBlur = 24;
-         ctx.fillStyle = '#ffd966'; ctx.font = 'bold 66px ' + FONT; fitCanvasText(ctx, 'ROUNDINESS', W * 0.84, 66, 32); ctx.fillText('ROUNDINESS', W / 2, 175); ctx.restore();
+         ctx.fillStyle = '#ffd966'; ctx.font = 'bold 66px ' + FONT; fitCanvasText(ctx, 'ROUNDY', W * 0.84, 66, 32); ctx.fillText('ROUNDY', W / 2, 175); ctx.restore();
          ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.font = 'bold 18px ' + FONT; ctx.fillText('Made by Nitro', W / 2, 220);
          ctx.fillStyle = 'rgba(255,255,255,0.68)'; ctx.font = 'bold 14px ' + FONT; ctx.fillText('LOADING YOUR RUN', W / 2, 286);
          var barX = 220, barY = 330, barW = 460, barH = 18;
@@ -4139,7 +4139,7 @@ SoundFX.prototype.startMusic = function() { this._startMusicMode('normal'); };
 
          var titleAlpha = fadeOut * reveal; ctx.globalAlpha = titleAlpha;
          ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.save(); ctx.translate(cx, 252 + (1 - reveal) * 20); ctx.scale(0.92 + 0.08 * reveal, 0.92 + 0.08 * reveal);
-         ctx.shadowColor = 'rgba(255,217,102,0.55)'; ctx.shadowBlur = 24; ctx.fillStyle = '#ffd966'; ctx.font = 'bold 66px ' + FONT; fitCanvasText(ctx, 'ROUNDINESS', W * 0.84, 66, 32); ctx.fillText('ROUNDINESS', 0, 0); ctx.restore();
+         ctx.shadowColor = 'rgba(255,217,102,0.55)'; ctx.shadowBlur = 24; ctx.fillStyle = '#ffd966'; ctx.font = 'bold 66px ' + FONT; fitCanvasText(ctx, 'ROUNDY', W * 0.84, 66, 32); ctx.fillText('ROUNDY', 0, 0); ctx.restore();
          var makerReveal = easeOutCubic(clamp01((t - 0.45) / 0.65));
          ctx.globalAlpha = fadeOut * makerReveal; ctx.fillStyle = 'rgba(255,255,255,0.96)'; ctx.font = 'bold 19px ' + FONT; ctx.fillText('Made by Nitro', cx, 294);
          ctx.restore(); ctx.globalAlpha = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
