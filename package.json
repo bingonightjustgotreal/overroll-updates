@@ -30,7 +30,8 @@
             {
                 "provider": "github",
                 "owner": "bingonightjustgotreal",
-                "repo": "overroll-updates"
+                "repo": "overroll-updates",
+                "releaseType": "release"
             }
         ],
         "directories": {
